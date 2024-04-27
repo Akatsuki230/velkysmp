@@ -1,118 +1,183 @@
-import Image from "next/image";
 import { Inter } from "next/font/google";
+import { useEffect, useState } from "react";
+import { Button, Card, CardBody, Progress, Tab, Tabs } from "@nextui-org/react";
+import { useDisclosure } from "@nextui-org/react";
+import Head from "next/head";
+import { parseCookies } from "nookies";
+import { GroupModes, Player } from "@/components/Types";
+import {
+    renderGroupedByNone,
+    renderGroupedByOnline,
+    renderGroupedByPlaytime,
+    renderGroupedByFirstLetter
+} from "@/components/PlayerLists";
+import VersionChanges from "@/components/VersionChange";
+import CustomizeProfileModal from "@/components/CustomizeProfileModal";
+import FeedbackModal from "@/components/FeedbackModal";
+
+const LATEST_VERSION = "5";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
-  return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/pages/index.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+    const { isOpen: versionIsOpen, onOpen: versionOnOpen, onClose: versionOnClose } = useDisclosure();
+    const {
+        isOpen: customizeProfileIsOpen,
+        onOpen: customizeProfileOnOpen,
+        onClose: customizeProfileOnClose
+    } = useDisclosure();
+    const {
+        isOpen: feedbackIsOpen,
+        onOpen: feedbackOnOpen,
+        onClose: feedbackOnClose
+    } = useDisclosure();
+    const [users, setUsers] = useState([] as Player[]);
+    const [loading, setLoading] = useState(true);
+    const [motd, setMotd] = useState("");
+    const [online, setOnline] = useState(0);
+    const [max, setMax] = useState(0);
+    const [ping, setPing] = useState(0);
+    const [grouping, setGroupingProp] = useState("online" as GroupModes);
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+    function setGrouping(x: GroupModes) {
+        setGroupingProp(x);
+        document.cookie = `GROUPING=${x}; path=/; max-age=31536000`;
+    }
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+    useEffect(() => {
+        const cookies = parseCookies();
+        switch (cookies.GROUPING) {
+            case "none":
+            case "online":
+            case "playtime":
+            case "first_letter":
+                setGrouping(cookies.GROUPING);
+                break;
+            default:
+                setGrouping("none");
+        }
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
+        fetch("/api/get")
+            .then((res) => res.json())
+            .then((data) => {
+                setUsers(data.players);
+                setMotd(data.motd);
+                setOnline(data.online);
+                setMax(data.max);
+                setPing(data.ping);
+                setLoading(false);
+            });
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Discover and deploy boilerplate example Next.js&nbsp;projects.
-          </p>
-        </a>
+        if (cookies.VERSION !== LATEST_VERSION) {
+            document.cookie = `VERSION=${LATEST_VERSION}`;
+            versionOnOpen();
+        }
+    }, []);
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
+    return (
+        <main className={`${inter.className} min-h-[100vh]`}>
+            <Head>
+                <title>VelkySMP</title>
+                <meta name="description" content="VelkySMP Status Monitor by Akatsuki2555" />
+                <meta name="og:title" content="VelkySMP Status Monitor" />
+                <meta name="og:description" content="VelkySMP Status Monitor by Akatsuki2555" />
+                <meta name="og:url" content="https://velkysmp-mon.vercel.app" />
+                <meta name="og:image" content="https://velkysmp-mon.vercel.app/favicon.ico" />
+                <link rel="icon" href="/favicon.ico" />
+                <meta property="og:site_name" content="Velky SMP Status Monitor" />
+                <meta property="og:type" content="website" />
+                <meta property="og:locale" content="en_US" />
+            </Head>
+            <div className="flex justify-center">
+                <div className="w-[400px] md:w-[600px] lg:w-[800px] xl:w-[1100px]">
+                    <VersionChanges isOpen={versionIsOpen} onClose={versionOnClose} />
+
+                    <div
+                        style={{
+                            backgroundImage: "url('/bg.webp')",
+                            backgroundPosition: "center",
+                            backgroundSize: "cover"
+                        }}
+                        className="h-40 rounded-2xl m-1 p-12"
+                    >
+                        <h1 className="text-4xl mb-2">
+                            VelkySMP
+                        </h1>
+                        <h2 className="text-xl">
+                            Status Monitor
+                        </h2>
+                    </div>
+                    <Button title="Customize Profile" onClick={customizeProfileOnOpen}>
+                        Customize Profile
+                    </Button>
+                    <Button title="Developer" className="ml-2" onClick={() => {
+                        location.href = "https://linktr.ee/akatsuki2555";
+                    }}>
+                        Developer
+                    </Button>
+                    <Button title="Developer" className="ml-2" onClick={() => {
+                        location.href = "/privacy";
+                    }}>
+                        Privacy Policy
+                    </Button>
+                    <Button title="Feedback" className="ml-2" onClick={feedbackOnOpen}>
+                        Feedback
+                    </Button>
+                    <br />
+                    <p>
+                        Welcome to the VelkySMP Status Monitor by Akatsuki2555! This page shows the status of the
+                        VelkySMP server, as well as the playtime of all players.
+                    </p>
+                    {loading || (
+                        <>
+                            <p className="mt-2">
+                                MOTD: {motd}
+                            </p>
+                            <p>
+                                {online}/{max}
+                            </p>
+                            <p>
+                                Ping: {ping}ms
+                            </p>
+                        </>
+                    )}
+
+                    {loading && <Progress isIndeterminate aria-label="Loading..." className="my-2" />}
+
+                    {online > 12 && <Card>
+                        <CardBody className="bg-yellow-800 font-bold">
+                            WARNING: The maximum online players that can be shown is 12 and that is a limitation of
+                            Minecraft. For the players that don't appear online, their playtime will not be counted.
+                        </CardBody>
+                    </Card>}
+
+                    <p className="mt-2">
+                        Group by:
+                    </p>
+                    <Tabs selectedKey={grouping} onSelectionChange={(x) => setGrouping(x.toString() as GroupModes)}>
+                        <Tab key="none" title="None">
+                            {renderGroupedByNone(loading, users)}
+                        </Tab>
+                        <Tab key="online" title="Online/Offline">
+                            {renderGroupedByOnline(loading, users)}
+                        </Tab>
+                        <Tab key="playtime" title="Playtime">
+                            {renderGroupedByPlaytime(loading, users)}
+                        </Tab>
+                        <Tab key="first_letter" title="First Letter">
+                            {renderGroupedByFirstLetter(loading, users)}
+                        </Tab>
+                    </Tabs>
+
+                    <p className="text-sm mt-4">
+                        This page is not affiliated with VelkySMP or Velky himself. This page is made as a community
+                        project by Akatsuki2555.
+                    </p>
+
+                    <CustomizeProfileModal isOpen={customizeProfileIsOpen} onClose={customizeProfileOnClose} />
+                    <FeedbackModal isOpen={feedbackIsOpen} onClose={feedbackOnClose} />
+                </div>
+            </div>
+        </main>
+    );
 }
