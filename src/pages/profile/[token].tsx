@@ -37,9 +37,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         user.profileStyle.countryCode = "none";
     }
 
-    if (!user.profileStyle.prideFlags) {
-        user.profileStyle.prideFlags = [];
-    }
+    user.profileStyle.prideFlags = Array.isArray(user.profileStyle.prideFlags)
+        ? user.profileStyle.prideFlags
+        : [];
 
     if (!user.profileStyle.hideStar) {
         user.profileStyle.hideStar = false;

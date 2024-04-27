@@ -254,7 +254,7 @@ export function getCodes(): string[] {
 export function getFlag(code: string): string {
     // return "https://www.countryflags.io/" + code + "/flat/64.png"; // doesn'tw ork
     // return "https://flagcdn.com/w320/" + code + ".png"; // get in svg format
-    return "https://flagcdn.com/" + code.toLowerCase() + ".svg";
+    return "/countryflags/" + code.toUpperCase() + ".svg";
 }
 
 export function getName(code: string): string {
