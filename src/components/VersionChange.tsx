@@ -10,6 +10,14 @@ function VersionChanges(props: { isOpen: boolean; onClose: () => void }) {
                             What's new:
                         </ModalHeader>
                         <ModalBody>
+                            <p className="text-xl font-bold">
+                                1.6
+                            </p>
+                            <ul className="list-disc">
+                                <li>Added the ability to show last join time</li>
+                                <li>Fixed a small bug that would make the Minecraft checking service stop working when there weren't any online players</li>
+                                <li>Updated link to developer details</li>
+                            </ul>
 
                             <p className="text-xl font-bold">
                                 1.5
@@ -28,13 +36,13 @@ function VersionChanges(props: { isOpen: boolean; onClose: () => void }) {
                                 <li>Added country flags</li>
                             </ul>
 
-                            <p className="text-xl font-bold">
+                            {/* <p className="text-xl font-bold">
                                 1.3
                             </p>
                             <ul className="list-disc">
                                 <li>Fixed the warning about online players showing when it shouldn't</li>
                                 <li>Added a feedback modal</li>
-                            </ul>
+                            </ul> */}
 
                             {/*<p className="text-xl font-bold">*/}
                             {/*    1.2*/}

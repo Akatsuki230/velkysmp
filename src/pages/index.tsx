@@ -15,7 +15,7 @@ import VersionChanges from "@/components/VersionChange";
 import CustomizeProfileModal from "@/components/CustomizeProfileModal";
 import FeedbackModal from "@/components/FeedbackModal";
 
-const LATEST_VERSION = "5";
+const LATEST_VERSION = "6";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -111,7 +111,7 @@ export default function Home() {
                         Customize Profile
                     </Button>
                     <Button title="Developer" className="ml-2" onClick={() => {
-                        location.href = "https://linktr.ee/akatsuki2555";
+                        location.href = "https://akatsuki.nekoweb.org/";
                     }}>
                         Developer
                     </Button>

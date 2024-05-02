@@ -16,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const client = await MongoClient.connect(process.env.MONGODB_URI!);
     const playersCollection = client.db(process.env.MONGODB_DATABASE!).collection("Playtimes");
 
-    let { newNameColor, newDisplayName, newPrideFlags, newCountryCode, newHideStar, token } = req.body;
+    let { newNameColor, newDisplayName, newPrideFlags, newCountryCode, newHideStar, newShowLastJoinDate, token } = req.body;
 
     if (newNameColor === undefined) {
         res.status(400).json({ error: "Missing newNameColor field" });
@@ -40,6 +40,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (newHideStar === undefined) {
         res.status(400).json({ error: "Missing newHideStar field" });
+        return;
+    }
+
+    if (newShowLastJoinDate === undefined) {
+        res.status(400).json({ error: "Missing newShowLastJoinDate field" });
         return;
     }
 
@@ -67,7 +72,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             "profileStyle.nameColour": newNameColor,
             "profileStyle.prideFlags": newPrideFlags || [],
             "profileStyle.countryCode": newCountryCode,
-            "profileStyle.hideStar": newHideStar
+            "profileStyle.hideStar": newHideStar,
+            "profileStyle.showLastJoinedDate": newShowLastJoinDate
         }
     });
 

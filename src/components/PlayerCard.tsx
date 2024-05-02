@@ -32,6 +32,9 @@ export function PlayerCard(props: { x: Player }) {
                 <span>
                     Playtime: {props.x.humantime}
                 </span>
+                {props.x.profileStyle.showLastJoinedDate && <span>
+                    Last joined: {new Date(props.x.lastJoin ?? "1970-01-01T00:00:00.000Z").toLocaleString()}
+                    </span>}
             </CardBody>
         </Card>
     );

@@ -2,11 +2,14 @@
   "javascript.format.enable": false,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[typescriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "vscode.typescript-language-features",
     "editor.tabSize": 2,
     "editor.insertSpaces": true
   },
   "[dotenv]": {
     "editor.formatOnSave": false
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
   }
 }

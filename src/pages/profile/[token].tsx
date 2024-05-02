@@ -19,7 +19,28 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     await mongodb.connect();
 
     const collPlaytimes = mongodb.db(process.env.MONGODB_DATABASE!).collection("Playtimes");
-    const user = await collPlaytimes.findOne({ token }) as WithId<Player> | null;
+    const user = await collPlaytimes.findOne({ token }) as WithId<{
+        uuid: string;
+        humantime: string;
+        name: string;
+        online: boolean;
+        seconds: number;
+        token: string;
+        profileStyle: ProfileStyle;
+        lastjoin: Date;
+    }> | null;
+
+    const loginHistory = mongodb.db(process.env.MONGODB_DATABASE!).collection("LoginHistory");
+    await loginHistory.insertOne({
+        token,
+        ip: context.req.socket.remoteAddress,
+        date: new Date(),
+        browser: context.req.headers["user-agent"]
+    });
+
+    const loginAttempts = await loginHistory.find({ token: { "$eq": token } }).sort({ date: -1 }).limit(10).toArray() as WithId<{
+        token: string; ip: string; browser: string; date: Date;
+    }>[];
 
     if (!user) {
         return {
@@ -29,7 +50,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
     if (!user.profileStyle) {
         user.profileStyle = {
-            nameColour: "#FFFFFF", displayName: user.name, countryCode: "none", prideFlags: [], hideStar: false
+            nameColour: "#FFFFFF", displayName: user.name, countryCode: "none", prideFlags: [], hideStar: false, showLastJoinedDate: false
         };
     }
 
@@ -56,9 +77,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
             humantime: user.humantime,
             seconds: user.seconds,
             online: user.online,
+            lastJoin: user.lastjoin.toISOString(),
             pastPlaytimes: playtimes.map(x => {
                 return {
                     name: x.name, humantime: x.humanplaytime, start: x.join_timestamp, end: x.leave_timestamp
+                };
+            }),
+            loginAttempts: loginAttempts.map(x => {
+                return {
+                    ip: x.ip, browser: x.browser, date: x.date.toISOString()
                 };
             })
         }
@@ -91,7 +118,7 @@ function PrideFlags(params: {
                     <div className="flex flex-row">
                         {params.playerCard.profileStyle.prideFlags ? (params.playerCard.profileStyle.prideFlags.map((x, i) => {
                             return (<img key={x} className="inline h-6 mr-2" src={getFlagImg(x)}
-                                         onClick={() => removePrideFlag(x)} />);
+                                onClick={() => removePrideFlag(x)} />);
                         })) : (<p>No pride flags</p>)}
                     </div>
                     <h2 className="font-bold text-xl mt-2">Add pride flags</h2>
@@ -100,7 +127,7 @@ function PrideFlags(params: {
                             .filter((x) => !params.playerCard.profileStyle.prideFlags?.includes(x))
                             .map((x, i) => {
                                 return (<img key={x} className="inline h-6 mr-2" src={getFlagImg(x)}
-                                             onClick={() => addPrideFlag(x)} />);
+                                    onClick={() => addPrideFlag(x)} />);
                             })}
                     </div>
                 </CardBody>
@@ -125,12 +152,12 @@ type SuggestedCountriesProps = {
 };
 
 const SuggestedCountries: React.FC<SuggestedCountriesProps> = ({
-                                                                   playerCard,
-                                                                   countrySuggestions,
-                                                                   setCountryCode,
-                                                                   getName,
-                                                                   getFlag
-                                                               }) => {
+    playerCard,
+    countrySuggestions,
+    setCountryCode,
+    getName,
+    getFlag
+}) => {
     if (playerCard.profileStyle.countryCode === "NONE" || !playerCard.profileStyle.countryCode) {
         return (
             <Card className="mt-2">
@@ -141,7 +168,7 @@ const SuggestedCountries: React.FC<SuggestedCountriesProps> = ({
                             <motion.div key={x.code} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                                 <Tooltip className="dark text-white" key={x.code} content={getName(x.code)}>
                                     <img className="inline h-6 mr-2" src={getFlag(x.code)}
-                                         onClick={() => setCountryCode(x.code)} />
+                                        onClick={() => setCountryCode(x.code)} />
                                 </Tooltip>
                             </motion.div>
                         ))}
@@ -161,12 +188,15 @@ export default function ProfileToken(props: {
     profileStyle: ProfileStyle;
     seconds: number;
     online: boolean;
+    lastJoin: string;
     pastPlaytimes: { name: string; humantime: string; start: number; end: number }[];
+    loginAttempts: { ip: string; browser: string; date: string }[];
 }) {
 
     const [playerCard, setPlayerCard] = useState<Player>(props);
     const [customizationStatus, setCustomizationStatus] = useState("hide" as "hide" | "error" | "success");
     const { isOpen: feedbackIsOpen, onOpen: feedbackOnOpen, onClose: feedbackOnClose } = useDisclosure();
+    const [loginsShowIP, setLoginsShowIP] = useState(false);
 
     const [countrySuggestions, setCountrySuggestions] = useState<{ code: string, probability: number }[]>([]);
 
@@ -195,6 +225,15 @@ export default function ProfileToken(props: {
         setPlayerCard({ ...playerCard, profileStyle: { ...playerCard.profileStyle, displayName: name } });
     };
 
+    const getLastPlayed = () => {
+        // Sort the pastPlaytimes array based on the end time in descending order
+        const sortedPlaytimes = props.pastPlaytimes.sort((a, b) => b.end - a.end);
+
+        // Return the first element of the sorted array
+        return sortedPlaytimes[0];
+    }
+
+
     // addPrideFlag, removePrideFlag
 
 
@@ -212,6 +251,7 @@ export default function ProfileToken(props: {
                 newPrideFlags: playerCard.profileStyle.prideFlags,
                 newCountryCode: playerCard.profileStyle.countryCode,
                 newHideStar: playerCard.profileStyle.hideStar,
+                newShowLastJoinDate: playerCard.profileStyle.showLastJoinedDate,
                 token: props.token
             })
         }).then((res) => {
@@ -274,18 +314,23 @@ export default function ProfileToken(props: {
                         <PrideFlags playerCard={playerCard} setPlayerCard={setPlayerCard} />
                         <br />
                         <Select label="Country" selectedKeys={[playerCard.profileStyle.countryCode ?? "NONE"]}
-                                onChange={x => setCountryCode(x.target.value)}
-                                description="You can select your country here to display it. You can type the first letter of the country to jump to it.">
+                            onChange={x => setCountryCode(x.target.value)}
+                            description="You can select your country here to display it. You can type the first letter of the country to jump to it.">
                             {getCountryContent()}
                         </Select>
 
                         <SuggestedCountries playerCard={playerCard} countrySuggestions={countrySuggestions}
-                                            setCountryCode={setCountryCode} getName={getName} getFlag={getFlag} />
+                            setCountryCode={setCountryCode} getName={getName} getFlag={getFlag} />
 
                         <Switch isSelected={!playerCard.profileStyle.hideStar} className="mt-2"
-                                onChange={x => setHideStar(!x.target.checked)}>Show star next to username</Switch>
+                            onChange={x => setHideStar(!x.target.checked)}>Show star next to username</Switch>
                         <p className="text-xs text-gray-500">Here you can disable the little star next to your
                             username. This is default for all profiles.</p>
+                        <Switch isSelected={playerCard.profileStyle.showLastJoinedDate} className="mt-2"
+                            onChange={(x) => setPlayerCard({ ...playerCard, profileStyle: { ...playerCard.profileStyle, showLastJoinedDate: x.target.checked } })}>Show last joined time publicly</Switch>
+                        <p className="text-xs text-gray-500">Check if you want to show your last joined time publicly.</p>
+
+
                         <Button className="mt-2" color="primary" onClick={saveCustomization}>Save</Button>
                         <p>
                             {customizationStatus === "error" && (<span className="text-red-600">
@@ -303,6 +348,19 @@ export default function ProfileToken(props: {
                                     <p className="font-bold">Playtime: {x.humantime}</p>
                                     <p>Start: {new Date(x.start).toLocaleString()}</p>
                                     <p>End: {new Date(x.end).toLocaleString()}</p>
+                                </CardBody>
+                            </Card>);
+                        })}
+                    </Tab>
+                    <Tab key="logins" title="Logins">
+                        <h1>This page shows your past loads of this page.</h1>
+                        <Switch checked={loginsShowIP} onChange={x => setLoginsShowIP(x.target.checked)}>Show IP</Switch>
+                        {props.loginAttempts.map((x, i) => {
+                            return (<Card key={i} className="p-2 my-2">
+                                <CardBody>
+                                    <p>When: {new Date(x.date).toLocaleString()}</p>
+                                    <p>From IP: {loginsShowIP ? x.ip : "<hidden>"}</p>
+                                    <p>Browser: {x.browser}</p>
                                 </CardBody>
                             </Card>);
                         })}

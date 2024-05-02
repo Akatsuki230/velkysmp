@@ -30,5 +30,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const feedbackCollection = mongoClient.db(process.env.MONGODB_DATABASE!).collection("UserFeedback");
     await feedbackCollection.insertOne({ name, feedback });
 
+    await fetch(process.env.DISCORD_WEBHOOK!, {
+        method: 'POST',
+        headers: {
+            "User-Agent": "VelkySMPStatusMonitor/1.6",
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            "content": `**New feedback from ${name}**:\n${feedback}`
+        })
+    })
+
     res.status(200).json({ success: true, message: "Feedback submitted" });
 }

@@ -4,6 +4,7 @@ export type Player = {
     humantime: string;
     seconds: number;
     online: boolean;
+    lastJoin?: string;
     profileStyle: ProfileStyle;
 };
 
@@ -15,4 +16,5 @@ export type ProfileStyle = {
     prideFlags: string[] | undefined;
     countryCode: string;
     hideStar: boolean;
+    showLastJoinedDate: boolean;
 };
