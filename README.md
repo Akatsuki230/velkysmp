@@ -17,6 +17,8 @@ To start the development server, follow these steps:
 
 The development server will be running on `http://localhost:3000`.
 
+To generate the database on MongoDB, you can use the the other project, [mcstatusvelky](https://codeberg.org/Akatsuki/mcstatusvelky)
+
 ## Building
 
 To build the project, set up a few environment variables
