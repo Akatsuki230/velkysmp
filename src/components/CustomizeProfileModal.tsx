@@ -48,8 +48,9 @@ function CustomizeProfileModal(props: { isOpen: boolean, onClose: () => void }) 
                             </ModalHeader>
                             <ModalBody>
                                 <h1 className="text-2xl font-bold">How to customize your profile:</h1>
-                                <p>To customize your profile, simply DM @akatsuki2555 and she'll send you a one-time code.
+                                <p>To customize your profile, simply message Akatsuki35 on the Minecraft server and she'll send you a one-time code.
                                     You'll then get a link to your profile settings.</p>
+                                <p>If Akatsuki35 is not online on the Minecraft server, ping her on Discord and she'll come online to verify your account.</p>
                                 <p>One time codes are valid for only 30 minutes, after that they expire.</p>
                                 <p className="font-bold">Avoid showing the URL you get anywhere.
                                     People can see your past sessions and change your public profile.</p>
@@ -60,9 +61,7 @@ function CustomizeProfileModal(props: { isOpen: boolean, onClose: () => void }) 
 
                                 {loading && <CircularProgress />}
                                 {token && <>
-                                    <p>Your profile URL is:</p>
-                                    <p className="text-xl font-bold">{token}</p>
-                                    <p>Save it somewhere safe as the code was already deleted.</p>
+                                    <p>Your profile is valid! You can now click "Open profile" below and bookmark that page to keep it saved for when you need to edit your profile again.</p>
                                 </>}
                                 {error && <p className="text-red-500">{error}</p>}
                             </ModalBody>
