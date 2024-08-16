@@ -62,12 +62,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         ? user.profileStyle.prideFlags
         : [];
 
-    if (!user.profileStyle.hideStar) {
+    if (user.profileStyle.hideStar === undefined) {
         user.profileStyle.hideStar = false;
     }
 
     const collLastPlaytimes = mongodb.db(process.env.MONGODB_DATABASE!).collection("LastPlaytimes");
     const playtimes = await collLastPlaytimes.find({ "uuid": { "$eq": user.uuid } }).toArray();
+
+    await mongodb.close();
 
     return {
         props: {
@@ -250,8 +252,8 @@ export default function ProfileToken(props: {
                 newDisplayName: playerCard.profileStyle.displayName,
                 newPrideFlags: playerCard.profileStyle.prideFlags,
                 newCountryCode: playerCard.profileStyle.countryCode,
-                newHideStar: playerCard.profileStyle.hideStar,
-                newShowLastJoinDate: playerCard.profileStyle.showLastJoinedDate,
+                newHideStar: playerCard.profileStyle.hideStar === false,
+                newShowLastJoinDate: playerCard.profileStyle.showLastJoinedDate === true,
                 token: props.token
             })
         }).then((res) => {
