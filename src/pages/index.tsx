@@ -14,6 +14,7 @@ import {
 import VersionChanges from "@/components/VersionChange";
 import CustomizeProfileModal from "@/components/CustomizeProfileModal";
 import FeedbackModal from "@/components/FeedbackModal";
+import WarningModal from "@/components/WarningModal";
 
 const LATEST_VERSION = "6";
 
@@ -21,6 +22,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
     const { isOpen: versionIsOpen, onOpen: versionOnOpen, onClose: versionOnClose } = useDisclosure();
+    const { isOpen: warningIsOpen, onOpen: warningOnOpen, onClose: warningOnClose } = useDisclosure();
     const {
         isOpen: customizeProfileIsOpen,
         onOpen: customizeProfileOnOpen,
@@ -68,10 +70,13 @@ export default function Home() {
                 setLoading(false);
             });
 
-        if (cookies.VERSION !== LATEST_VERSION) {
-            document.cookie = `VERSION=${LATEST_VERSION}`;
-            versionOnOpen();
-        }
+        // if (cookies.VERSION !== LATEST_VERSION) {
+        //     document.cookie = `VERSION=${LATEST_VERSION}`;
+        //     versionOnOpen();
+        // }
+        // No longer show updates
+
+        warningOnOpen();
     }, []);
 
     return (
@@ -176,6 +181,7 @@ export default function Home() {
 
                     <CustomizeProfileModal isOpen={customizeProfileIsOpen} onClose={customizeProfileOnClose} />
                     <FeedbackModal isOpen={feedbackIsOpen} onClose={feedbackOnClose} />
+                    <WarningModal isOpen={warningIsOpen} onClose={warningOnClose} />
                 </div>
             </div>
         </main>
