@@ -37,4 +37,3 @@ jobs:
         run: |
           pnpm build
           pnpm vercel --token ${{ secrets.VERCEL_TOKEN }} --prod
-      - name: Deploy
