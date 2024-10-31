@@ -20,4 +20,6 @@ jobs:
       - name: Build
         run: |
           pnpm build
+          mkdir -p .vercel
+          echo ${{ secrets.VERCEL_PROJECT }} > .vercel/project.json
           pnpm vercel --token ${{ secrets.VERCEL_TOKEN }} --prod
