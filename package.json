@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@nextui-org/react": "^2.2.10",
+    "@nextui-org/tooltip": "^2.0.41",
     "babel-plugin-formatjs": "^10.5.13",
     "color-diff": "^1.4.0",
     "framer-motion": "^11.0.8",
