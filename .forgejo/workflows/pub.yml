@@ -19,12 +19,11 @@ jobs:
           node-version: 20
       - name: Install dependencies
         run: |
-          npm install -g pnpm
-          pnpm install
+          npm install -g pnpm yarn
+          yarn
       - name: Build
         run: |
-          pnpm build
           mkdir -p .vercel
-          pnpm vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
-          pnpm vercel build --token ${{ secrets.VERCEL_TOKEN }}
-          pnpm vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --prebuilt
+          yarn vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+          yarn vercel build --token ${{ secrets.VERCEL_TOKEN }}
+          yarn vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --prebuilt
