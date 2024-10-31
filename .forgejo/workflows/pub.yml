@@ -14,7 +14,7 @@ jobs:
         with:
           node-version: 20
       - name: Cache pnpm modules
-        uses: actions/cache@v3
+        uses: https://code.forgejo.org/actions/cache@v4
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -22,7 +22,7 @@ jobs:
             ${{ runner.os }}-
             ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Cache .next
-        uses: actions/cache@v3
+        uses: https://code.forgejo.org/actions/cache@v4
         with:
           path: .next/cache
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
