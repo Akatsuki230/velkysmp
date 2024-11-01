@@ -29,8 +29,8 @@ deploy-job:
   environment: production
   
   script:
-    - yarn install --global vercel
-    - yarn install
+    - yarn global add vercel
+    - yarn
     - vercel pull --yes --environment=production --token=$VERCEL_TOKEN
     - vercel build --prod --token=$VERCEL_TOKEN
     - vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
