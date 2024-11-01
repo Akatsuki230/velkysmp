@@ -15,39 +15,15 @@ import {
     TableRow,
     useDisclosure
 } from "@nextui-org/react";
-import { MongoClient } from "mongodb";
 import { GetServerSidePropsContext } from "next";
 import { Inter } from "next/font/google";
-import { parseCookies } from "nookies";
 import React, { useState } from "react";
 import Head from "next/head";
 
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
-    const cookies = parseCookies(ctx);
-    if (cookies["auth-token"] !== process.env.ADMIN_TOKEN) {
-        return {
-            props: {
-                loggedIn: false
-            }
-        };
-    }
-
-    const mongo = new MongoClient(process.env.MONGODB_URI!);
-    await mongo.connect();
-    const coll = mongo.db(process.env.MONGODB_DATABASE!).collection("Playtimes");
-    const users = await coll.find({}).toArray();
-    await mongo.close();
-
     return {
         props: {
-            loggedIn: true,
-            users: users.map((user) => {
-                return {
-                    name: user.name,
-                    token: user.token,
-                    playtime: user.humantime
-                };
-            })
+            loggedIn: false
         }
     };
 }
